@@ -39,7 +39,7 @@ public final class EntityEspClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (openMenuKey.consumeClick()) {
-                if (client.screen instanceof EntityEspScreen) {
+                if (client.gui.screen() instanceof EntityEspScreen) {
                     client.setScreenAndShow(null);
                 } else {
                     client.setScreenAndShow(new EntityEspScreen());
