@@ -28,7 +28,6 @@ public final class EntityEspClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         EntityEspConfig.load();
-        EntityEspRenderer.register();
 
         openMenuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.entityesp.open_menu",

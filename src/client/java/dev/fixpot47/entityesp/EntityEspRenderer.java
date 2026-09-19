@@ -15,11 +15,7 @@ import java.util.List;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -61,10 +57,6 @@ public final class EntityEspRenderer {
 
     private EntityEspRenderer() {}
 
-    public static void register() {
-        LevelRenderEvents.COLLECT_SUBMITS.register(EntityEspRenderer::render);
-    }
-
     public static void tick(Minecraft client) {
         if (!EntityEspConfig.chestEsp() || client.level == null || client.player == null) {
             CHEST_BOXES.clear();
@@ -80,18 +72,13 @@ public final class EntityEspRenderer {
         scanChests(client);
     }
 
-    private static void render(LevelRenderContext context) {
+    public static void render(PoseStack poseStack, float partialTick) {
         Minecraft client = Minecraft.getInstance();
         if (!EntityEspConfig.anyEnabled() || client.level == null || client.player == null) {
             return;
         }
 
-        Camera camera = client.gameRenderer.mainCamera();
-        if (!camera.isInitialized()) {
-            return;
-        }
-
-        Vec3 cameraPos = camera.position();
+        Vec3 cameraPos = client.gameRenderer.mainCamera().position();
         List<ColoredBox> boxes = new ArrayList<>();
 
         for (Entity entity : client.level.entitiesForRendering()) {
@@ -99,24 +86,31 @@ public final class EntityEspRenderer {
                 continue;
             }
 
-            if (EntityEspConfig.playerEsp() && entity instanceof Player player && player != client.player) {
-                boxes.add(new ColoredBox(entity.getBoundingBox().inflate(0.035D), distanceColor(client, player)));
+            if (EntityEspConfig.playerEsp()
+                    && entity instanceof Player player
+                    && player != client.player) {
+                boxes.add(new ColoredBox(
+                        entity.getBoundingBox().inflate(0.035D),
+                        distanceColor(client, player)));
                 continue;
             }
 
             if (EntityEspConfig.mobEsp()
                     && entity instanceof LivingEntity living
                     && !(entity instanceof Player)) {
-                boxes.add(new ColoredBox(entity.getBoundingBox().inflate(0.025D), distanceColor(client, living)));
+                boxes.add(new ColoredBox(
+                        entity.getBoundingBox().inflate(0.025D),
+                        distanceColor(client, living)));
                 continue;
             }
 
-            if (EntityEspConfig.chestEsp()) {
-                if (entity instanceof MinecartChest
-                        || entity instanceof AbstractChestBoat
-                        || entity instanceof MinecartHopper) {
-                    boxes.add(new ColoredBox(entity.getBoundingBox().inflate(0.035D), CHEST_YELLOW));
-                }
+            if (EntityEspConfig.chestEsp()
+                    && (entity instanceof MinecartChest
+                    || entity instanceof AbstractChestBoat
+                    || entity instanceof MinecartHopper)) {
+                boxes.add(new ColoredBox(
+                        entity.getBoundingBox().inflate(0.035D),
+                        CHEST_YELLOW));
             }
         }
 
@@ -128,25 +122,15 @@ public final class EntityEspRenderer {
             return;
         }
 
-        submitBoxes(context, cameraPos, boxes, EntityEspRenderTypes.ESP_QUADS, true);
-        submitBoxes(context, cameraPos, boxes, EntityEspRenderTypes.ESP_LINES, false);
-    }
+        EntityEspBufferSource bufferSource = new EntityEspBufferSource();
+        VertexConsumer consumer = bufferSource.getBuffer(EntityEspRenderTypes.ESP_LINES);
 
-    private static void submitBoxes(LevelRenderContext context, Vec3 cameraPos,
-                                    List<ColoredBox> boxes, RenderType renderType,
-                                    boolean filled) {
-        context.submitNodeCollector().submitCustomGeometry(
-                context.poseStack(), renderType, (pose, consumer) -> {
-                    for (ColoredBox colored : boxes) {
-                        AABB box = colored.box.move(-cameraPos.x, -cameraPos.y, -cameraPos.z);
-                        int color = filled ? withAlpha(colored.color, 0x35) : withAlpha(colored.color, 0xD0);
-                        if (filled) {
-                            drawSolidBox(pose, consumer, box, color);
-                        } else {
-                            drawOutlinedBox(pose, consumer, box, color);
-                        }
-                    }
-                });
+        for (ColoredBox colored : boxes) {
+            AABB box = colored.box.move(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+            drawOutlinedBox(poseStack, consumer, box, colored.color);
+        }
+
+        bufferSource.uploadAndDraw();
     }
 
     private static int distanceColor(Minecraft client, LivingEntity entity) {
@@ -156,10 +140,6 @@ public final class EntityEspRenderer {
         return 0xFF000000
                 | ((int)(r * 255.0F) << 16)
                 | ((int)(g * 255.0F) << 8);
-    }
-
-    private static int withAlpha(int argb, int alpha) {
-        return (alpha << 24) | (argb & 0x00FFFFFF);
     }
 
     private static void scanChests(Minecraft client) {
@@ -238,52 +218,16 @@ public final class EntityEspRenderer {
         return new AABB(pos);
     }
 
-    private static void drawSolidBox(PoseStack.Pose pose, VertexConsumer buffer, AABB box, int color) {
-        float x1 = (float)box.minX;
-        float y1 = (float)box.minY;
-        float z1 = (float)box.minZ;
-        float x2 = (float)box.maxX;
-        float y2 = (float)box.maxY;
-        float z2 = (float)box.maxZ;
+    private static void drawOutlinedBox(PoseStack poseStack, VertexConsumer buffer,
+                                        AABB box, int color) {
+        PoseStack.Pose pose = poseStack.last();
 
-        buffer.addVertex(pose, x1, y1, z1).setColor(color);
-        buffer.addVertex(pose, x2, y1, z1).setColor(color);
-        buffer.addVertex(pose, x2, y1, z2).setColor(color);
-        buffer.addVertex(pose, x1, y1, z2).setColor(color);
-
-        buffer.addVertex(pose, x1, y2, z1).setColor(color);
-        buffer.addVertex(pose, x1, y2, z2).setColor(color);
-        buffer.addVertex(pose, x2, y2, z2).setColor(color);
-        buffer.addVertex(pose, x2, y2, z1).setColor(color);
-
-        buffer.addVertex(pose, x1, y1, z1).setColor(color);
-        buffer.addVertex(pose, x1, y2, z1).setColor(color);
-        buffer.addVertex(pose, x2, y2, z1).setColor(color);
-        buffer.addVertex(pose, x2, y1, z1).setColor(color);
-
-        buffer.addVertex(pose, x2, y1, z1).setColor(color);
-        buffer.addVertex(pose, x2, y2, z1).setColor(color);
-        buffer.addVertex(pose, x2, y2, z2).setColor(color);
-        buffer.addVertex(pose, x2, y1, z2).setColor(color);
-
-        buffer.addVertex(pose, x1, y1, z2).setColor(color);
-        buffer.addVertex(pose, x2, y1, z2).setColor(color);
-        buffer.addVertex(pose, x2, y2, z2).setColor(color);
-        buffer.addVertex(pose, x1, y2, z2).setColor(color);
-
-        buffer.addVertex(pose, x1, y1, z1).setColor(color);
-        buffer.addVertex(pose, x1, y1, z2).setColor(color);
-        buffer.addVertex(pose, x1, y2, z2).setColor(color);
-        buffer.addVertex(pose, x1, y2, z1).setColor(color);
-    }
-
-    private static void drawOutlinedBox(PoseStack.Pose pose, VertexConsumer buffer, AABB box, int color) {
-        float x1 = (float)box.minX;
-        float y1 = (float)box.minY;
-        float z1 = (float)box.minZ;
-        float x2 = (float)box.maxX;
-        float y2 = (float)box.maxY;
-        float z2 = (float)box.maxZ;
+        float x1 = (float) box.minX;
+        float y1 = (float) box.minY;
+        float z1 = (float) box.minZ;
+        float x2 = (float) box.maxX;
+        float y2 = (float) box.maxY;
+        float z2 = (float) box.maxZ;
 
         line(pose, buffer, x1, y1, z1, x2, y1, z1, 1, 0, 0, color);
         line(pose, buffer, x1, y1, z2, x2, y1, z2, 1, 0, 0, color);
@@ -305,10 +249,14 @@ public final class EntityEspRenderer {
                              float x1, float y1, float z1,
                              float x2, float y2, float z2,
                              float nx, float ny, float nz, int color) {
-        buffer.addVertex(pose, x1, y1, z1).setColor(color)
-                .setNormal(pose, nx, ny, nz).setLineWidth(2.0F);
-        buffer.addVertex(pose, x2, y2, z2).setColor(color)
-                .setNormal(pose, nx, ny, nz).setLineWidth(2.0F);
+        buffer.addVertex(pose, x1, y1, z1)
+                .setColor(color)
+                .setNormal(pose, nx, ny, nz)
+                .setLineWidth(2.0F);
+        buffer.addVertex(pose, x2, y2, z2)
+                .setColor(color)
+                .setNormal(pose, nx, ny, nz)
+                .setLineWidth(2.0F);
     }
 
     private record ColoredBox(AABB box, int color) {}

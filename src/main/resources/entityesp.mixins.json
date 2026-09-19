@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.fixpot47.entityesp.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "LevelRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
