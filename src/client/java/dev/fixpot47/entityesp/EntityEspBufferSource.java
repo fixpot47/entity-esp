@@ -53,20 +53,9 @@ public final class EntityEspBufferSource {
         try {
             stagedBuffer.upload();
 
-            RenderTarget target = Minecraft.getInstance().gameRenderer.mainRenderTarget();
-            CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
-
-            try (RenderPass pass = encoder.createRenderPass(
-                    () -> "EntityESP",
-                    target.getColorTextureView(),
-                    Optional.empty(),
-                    target.getDepthTextureView(),
-                    OptionalDouble.empty())) {
-                RenderSystem.bindDefaultUniforms(pass);
-
-                for (int i = 0; i < draws.size(); i++) {
-                    draw(drawTypes.get(i), draws.get(i), pass);
-                }
+            // 26.2 PreparedRenderType draws through its own render pass.
+            for (int i = 0; i < draws.size(); i++) {
+                draw(drawTypes.get(i), draws.get(i));
             }
 
             stagedBuffer.endDraw();
@@ -75,7 +64,7 @@ public final class EntityEspBufferSource {
         }
     }
 
-    private void draw(RenderType type, StagedVertexBuffer.Draw draw, RenderPass pass) {
+    private void draw(RenderType type, StagedVertexBuffer.Draw draw) {
         StagedVertexBuffer.ExecuteInfo info = stagedBuffer.getExecuteInfo(draw);
         if (info != null) {
             type.prepare().drawFromBuffer(info);
