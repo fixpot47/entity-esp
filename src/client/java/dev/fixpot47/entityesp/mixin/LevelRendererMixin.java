@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 
 import dev.fixpot47.entityesp.EntityEspRenderer;
-import net.minecraft.client.DeltaTracker;
+import net.minecraft.util.DeltaTracker;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 
