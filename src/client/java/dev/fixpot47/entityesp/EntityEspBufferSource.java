@@ -78,7 +78,7 @@ public final class EntityEspBufferSource {
     private void draw(RenderType type, StagedVertexBuffer.Draw draw, RenderPass pass) {
         StagedVertexBuffer.ExecuteInfo info = stagedBuffer.getExecuteInfo(draw);
         if (info != null) {
-            type.prepare().drawFromBuffer(info, pass);
+            type.prepare().drawFromBuffer(info);
         }
     }
 
