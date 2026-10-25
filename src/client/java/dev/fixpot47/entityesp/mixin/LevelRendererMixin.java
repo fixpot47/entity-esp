@@ -2,7 +2,7 @@ package dev.fixpot47.entityesp.mixin;
 
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 
 import dev.fixpot47.entityesp.EntityEspRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -24,7 +24,7 @@ public abstract class LevelRendererMixin {
     private LevelRenderState levelRenderState;
 
     @Inject(
-            method = "render(Lcom/mojang/blaze3d/resource/GraphicsResourceAllocator;ZLnet/minecraft/client/renderer/state/level/CameraRenderState;Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;Lorg/joml/Vector4f;ZZ)V",
+            method = "render(Lcom/mojang/blaze3d/resource/GraphicsResourceAllocator;ZLnet/minecraft/client/renderer/state/level/CameraRenderState;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Vector4f;ZZ)V",
             at = @At("RETURN")
     )
     private void entityesp$render(
