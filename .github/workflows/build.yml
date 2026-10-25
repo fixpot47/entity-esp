@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: EntityESP 26.3
+    name: EntityESP 26.2
     runs-on: ubuntu-24.04
 
     steps:
@@ -31,13 +31,13 @@ jobs:
       - name: Verify final jar
         run: |
           mkdir -p dist
-          cp build/libs/entity-esp-1.0.0.jar dist/entity-esp.jar
-          jar tf dist/entity-esp.jar | grep 'dev/fixpot47/entityesp/EntityEspClient.class'
-          jar tf dist/entity-esp.jar | grep 'dev/fixpot47/entityesp/EntityEspRenderer.class'
-          jar tf dist/entity-esp.jar | grep 'fabric.mod.json'
+          cp build/libs/entity-esp-1.0.0+26.2.jar dist/entity-esp-26.2.jar
+          jar tf dist/entity-esp-26.2.jar | grep 'dev/fixpot47/entityesp/EntityEspClient.class'
+          jar tf dist/entity-esp-26.2.jar | grep 'dev/fixpot47/entityesp/EntityEspRenderer.class'
+          jar tf dist/entity-esp-26.2.jar | grep 'fabric.mod.json'
 
       - name: Upload mod jar
         uses: actions/upload-artifact@v4
         with:
-          name: entity-esp-1.0.0-mc26.3
-          path: dist/entity-esp.jar
+          name: entity-esp-1.0.0-mc26.2
+          path: dist/entity-esp-26.2.jar
