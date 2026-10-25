@@ -38,6 +38,6 @@ public abstract class LevelRendererMixin {
             CallbackInfo ci) {
         PoseStack poseStack = new PoseStack();
         poseStack.mulPose(cameraState.viewRotationMatrix);
-        EntityEspRenderer.render(poseStack, levelRenderState.worldPartialTicks);
+        EntityEspRenderer.render(poseStack, 0.0F);
     }
 }
