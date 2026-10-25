@@ -3,9 +3,13 @@
   "id": "entityesp",
   "version": "${version}",
   "name": "EntityESP",
-  "description": "Standalone PlayerESP, MobESP and ChestESP menu for Minecraft 26.3.",
-  "authors": ["fixpot47"],
-  "contributors": ["Wurst-Imperium and contributors"],
+  "description": "Standalone PlayerESP, MobESP and ChestESP menu for Minecraft 26.2.",
+  "authors": [
+    "fixpot47"
+  ],
+  "contributors": [
+    "Wurst-Imperium and contributors"
+  ],
   "contact": {
     "sources": "https://github.com/fixpot47/entity-esp"
   },
@@ -22,9 +26,9 @@
   ],
   "depends": {
     "fabricloader": ">=0.19.5",
-    "minecraft": "~26.3",
+    "minecraft": "~26.2",
     "java": ">=25",
     "fabric-api": "*",
-    "fixlib": ">=2.2.0+26.3"
+    "fixlib": "*"
   }
 }
