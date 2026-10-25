@@ -31,7 +31,7 @@ public final class EntityEspClient implements ClientModInitializer {
 
         openMenuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.entityesp.open_menu",
-                InputConstants.Type.KEYBOARD,
+                InputConstants.Type.KEYSYM,
                 InputConstants.KEY_F8,
                 CATEGORY
         ));
